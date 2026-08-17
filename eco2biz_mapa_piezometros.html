@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECO2BIZ · Mapa de piezómetros — Volcán</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c1117;
+    --panel:#141b24;
+    --panel-raised:#1b2430;
+    --panel-hover:#212b39;
+    --border:#293345;
+    --border-strong:#3a465a;
+    --text-primary:#e9edf3;
+    --text-secondary:#8d97aa;
+    --text-muted:#5c6779;
+    --accent:#4f9bd6;
+    --accent-dim:#274a68;
+    --accent-bg:#132534;
+    --teal:#33ab8c;
+    --teal-bg:#0f2620;
+    --amber:#dfa93d;
+    --amber-bg:#2b2110;
+    --red:#e2635c;
+    --red-bg:#2c1717;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'IBM Plex Sans',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--text-primary); font-family:var(--font-body);
+    font-size:14px; display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  a{color:inherit;}
+
+  /* ---- API key banner ---- */
+  #key-banner{
+    background:var(--amber-bg); border-bottom:1px solid #4a3a17; color:var(--amber);
+    font-size:12.5px; padding:9px 20px; display:flex; align-items:center; gap:10px; flex-shrink:0;
+  }
+  #key-banner code{
+    background:rgba(0,0,0,0.25); padding:2px 6px; border-radius:4px; font-family:var(--font-mono); font-size:11.5px;
+  }
+  #key-banner.hidden{display:none;}
+
+  /* ---- Topbar ---- */
+  .topbar{
+    display:flex; align-items:center; gap:14px; padding:14px 20px;
+    border-bottom:1px solid var(--border); background:var(--panel); flex-shrink:0;
+  }
+  .brand-mark{
+    width:30px; height:30px; border-radius:7px;
+    background:linear-gradient(155deg, var(--accent) 0%, #9089e0 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:13px; color:#0c1117; flex-shrink:0;
+  }
+  .topbar h1{font-family:var(--font-display); font-size:16px; font-weight:600;}
+  .topbar .sub{font-size:11.5px; color:var(--text-secondary); margin-top:1px;}
+  .spacer{flex:1;}
+  select{
+    background:var(--panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
+    font-family:var(--font-body); font-size:12.5px; padding:7px 9px; border-radius:6px;
+  }
+  .seg{display:flex; gap:3px; background:var(--panel-raised); border-radius:6px; padding:3px;}
+  .seg button{
+    background:none; border:none; color:var(--text-secondary); font-size:12px; font-family:var(--font-body);
+    padding:6px 11px; border-radius:5px; cursor:pointer;
+  }
+  .seg button.active{background:var(--accent-bg); color:var(--accent);}
+
+  /* ---- Body layout ---- */
+  .body-wrap{flex:1; display:flex; min-height:0;}
+
+  .sidebar{
+    width:300px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .sidebar-head{padding:16px 16px 10px;}
+  .sidebar-head .count{font-family:var(--font-display); font-size:20px; font-weight:600;}
+  .sidebar-head .lbl{font-size:11.5px; color:var(--text-secondary);}
+  .search-box{padding:0 16px 10px;}
+  .search-box input{
+    width:100%; background:var(--panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
+    font-family:var(--font-body); font-size:13px; padding:8px 10px; border-radius:6px;
+  }
+  .filters{display:flex; gap:6px; padding:0 16px 12px; flex-wrap:wrap;}
+  .filter-chip{
+    font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--border-strong);
+    color:var(--text-secondary); cursor:pointer; background:none; font-family:var(--font-body);
+  }
+  .filter-chip.active{color:var(--accent); border-color:var(--accent-dim); background:var(--accent-bg);}
+
+  .piezo-list{flex:1; overflow-y:auto; padding:0 10px 14px;}
+  .piezo-item{
+    display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:8px; cursor:pointer;
+    border:1px solid transparent; margin-bottom:4px;
+  }
+  .piezo-item:hover{background:var(--panel-hover);}
+  .piezo-item.sel{background:var(--accent-bg); border-color:var(--accent-dim);}
+  .status-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .status-dot.normal{background:var(--teal); box-shadow:0 0 0 2px rgba(51,171,140,0.15);}
+  .status-dot.atencion{background:var(--amber); box-shadow:0 0 0 2px rgba(223,169,61,0.18);}
+  .status-dot.alarma{background:var(--red); box-shadow:0 0 0 2px rgba(226,99,92,0.18);}
+  .piezo-item .info{flex:1; min-width:0;}
+  .piezo-item .code{font-family:var(--font-mono); font-size:12.5px; font-weight:500;}
+  .piezo-item .type{font-size:11px; color:var(--text-secondary);}
+  .piezo-item .val{font-family:var(--font-mono); font-size:12px; color:var(--text-secondary); text-align:right; flex-shrink:0;}
+
+  /* ---- Map area ---- */
+  .map-area{flex:1; position:relative; min-width:0;}
+  #map{width:100%; height:100%;}
+
+  .legend-float{
+    position:absolute; left:14px; bottom:14px; background:rgba(20,27,36,0.92);
+    border:1px solid var(--border); border-radius:8px; padding:10px 14px;
+    display:flex; gap:14px; font-size:11.5px; color:var(--text-secondary); backdrop-filter:blur(3px);
+  }
+  .legend-float span{display:flex; align-items:center; gap:6px;}
+
+  .detail-panel{
+    position:absolute; right:14px; top:14px; width:270px;
+    background:rgba(20,27,36,0.96); border:1px solid var(--border); border-radius:10px;
+    padding:16px; backdrop-filter:blur(3px); display:none;
+  }
+  .detail-panel.open{display:block;}
+  .detail-panel .close{
+    position:absolute; top:10px; right:10px; background:none; border:none; color:var(--text-secondary);
+    cursor:pointer; font-size:16px; line-height:1;
+  }
+  .detail-panel .code{font-family:var(--font-mono); font-size:15px; font-weight:600; margin-bottom:2px;}
+  .detail-panel .type{font-size:11.5px; color:var(--text-secondary); margin-bottom:12px;}
+  .detail-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-row .k{color:var(--text-secondary);}
+  .detail-row .v{font-family:var(--font-mono); text-align:right;}
+  .badge{font-size:10.5px; font-family:var(--font-mono); padding:2px 8px; border-radius:20px; border:1px solid var(--border-strong); display:inline-block; margin-top:10px;}
+  .badge.normal{color:var(--teal); border-color:#1c4f41; background:rgba(51,171,140,0.1);}
+  .badge.atencion{color:var(--amber); border-color:#5a4720; background:rgba(223,169,61,0.1);}
+  .badge.alarma{color:var(--red); border-color:#5a2c28; background:rgba(226,99,92,0.1);}
+
+  @media (max-width:820px){
+    .sidebar{position:absolute; z-index:5; height:100%; transform:translateX(-100%); transition:transform .2s;}
+    .sidebar.open{transform:translateX(0);}
+    .detail-panel{width:220px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="key-banner" style="display:none;">
+  <span>&#9888; Para activar el mapa, reemplaza <code>AIzaSyAkKC2qMimEQ05wpOg3b0-lMr9cK9hpmYo</code> en el HTML por tu API key de Google Maps con la Maps JavaScript API habilitada.</span>
+</div>
+
+<div class="topbar">
+  <div class="brand-mark">E2</div>
+  <div>
+    <h1>Mapa de piezómetros</h1>
+    <div class="sub">ECO2BIZ · Volcán — vista satelital</div>
+  </div>
+  <div class="spacer"></div>
+  <select id="site-select" aria-label="Seleccionar relavera">
+    <option>Relavera N°4 — Cerro de Pasco</option>
+    <option>Relavera Rumiallana</option>
+    <option>Relavera Ticlio</option>
+  </select>
+  <div class="seg" id="maptype-seg">
+    <button data-type="hybrid" class="active">Satélite</button>
+    <button data-type="roadmap">Mapa</button>
+    <button data-type="terrain">Relieve</button>
+  </div>
+</div>
+
+<div class="body-wrap">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="count" id="piezo-count">0</div>
+      <div class="lbl">piezómetros georreferenciados</div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Buscar por código...">
+    </div>
+    <div class="filters" id="filter-chips">
+      <button class="filter-chip active" data-filter="todos">Todos</button>
+      <button class="filter-chip" data-filter="normal">Normal</button>
+      <button class="filter-chip" data-filter="atencion">Atención</button>
+      <button class="filter-chip" data-filter="alarma">Alarma</button>
+    </div>
+    <div class="piezo-list" id="piezo-list"></div>
+  </aside>
+
+  <div class="map-area">
+    <div id="map"></div>
+    <div class="legend-float">
+      <span><span class="status-dot normal"></span>Normal</span>
+      <span><span class="status-dot atencion"></span>Atención</span>
+      <span><span class="status-dot alarma"></span>Alarma</span>
+    </div>
+    <div class="detail-panel" id="detail-panel">
+      <button class="close" id="detail-close" aria-label="Cerrar">&times;</button>
+      <div class="code" id="d-code">—</div>
+      <div class="type" id="d-type">—</div>
+      <div class="detail-row"><span class="k">Última lectura</span><span class="v" id="d-valor">—</span></div>
+      <div class="detail-row"><span class="k">Fecha de lectura</span><span class="v" id="d-fecha">—</span></div>
+      <div class="detail-row"><span class="k">Umbral de atención</span><span class="v" id="d-umbral">—</span></div>
+      <div class="detail-row"><span class="k">Profundidad</span><span class="v" id="d-prof">—</span></div>
+      <div class="detail-row"><span class="k">Instalación</span><span class="v" id="d-inst">—</span></div>
+      <span class="badge" id="d-badge">—</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ------------------------------------------------------------------
+  // Datos de piezómetros. Reemplazar lat/lng por las coordenadas reales
+  // levantadas en campo para cada instrumento de la relavera.
+  // ------------------------------------------------------------------
+  const piezometers = [
+    { code:"PZ-14", tipo:"Cuerda vibrante", lat:-10.6749, lng:-76.2571, valor:"28.4 m.c.a.", fecha:"2026-08-15 06:00", umbral:"30.0 m.c.a.", prof:"22 m", inst:"2019-03-11", estado:"normal" },
+    { code:"PZ-15", tipo:"Cuerda vibrante", lat:-10.6745, lng:-76.2559, valor:"24.1 m.c.a.", fecha:"2026-08-15 06:00", umbral:"27.0 m.c.a.", prof:"18 m", inst:"2019-03-11", estado:"normal" },
+    { code:"PZ-16", tipo:"Cuerda vibrante", lat:-10.6738, lng:-76.2548, valor:"33.1 m.c.a.", fecha:"2026-08-15 06:00", umbral:"30.0 m.c.a.", prof:"25 m", inst:"2019-05-20", estado:"atencion" },
+    { code:"PZ-02", tipo:"Casagrande", lat:-10.6761, lng:-76.2565, valor:"19.8 m.c.a.", fecha:"2026-08-09 08:00", umbral:"24.0 m.c.a.", prof:"15 m", inst:"2015-07-22", estado:"normal" },
+    { code:"PZ-05", tipo:"Casagrande", lat:-10.6756, lng:-76.2540, valor:"37.2 m.c.a.", fecha:"2026-08-15 07:30", umbral:"32.0 m.c.a.", prof:"20 m", inst:"2015-07-22", estado:"alarma" },
+    { code:"PZ-08", tipo:"Cuerda vibrante", lat:-10.6768, lng:-76.2551, valor:"21.6 m.c.a.", fecha:"2026-08-15 06:00", umbral:"28.0 m.c.a.", prof:"17 m", inst:"2020-02-14", estado:"normal" },
+    { code:"PZ-11", tipo:"Cuerda vibrante", lat:-10.6733, lng:-76.2536, valor:"25.9 m.c.a.", fecha:"2026-08-15 06:00", umbral:"29.0 m.c.a.", prof:"19 m", inst:"2020-02-14", estado:"normal" }
+  ];
+
+  const statusLabel = { normal:"Normal", atencion:"Atención", alarma:"Alarma" };
+  const statusColor = { normal:"#33ab8c", atencion:"#dfa93d", alarma:"#e2635c" };
+
+  let map, markers = [], infoWindow, selectedCode = null;
+  let currentFilter = "todos";
+
+  function initMap(){
+    const center = { lat: -10.6750, lng: -76.2555 };
+    map = new google.maps.Map(document.getElementById("map"), {
+      center, zoom: 17, mapTypeId: "hybrid",
+      tilt: 0, streetViewControl:false, fullscreenControl:false, mapTypeControl:false,
+      zoomControlOptions:{ position: google.maps.ControlPosition.RIGHT_BOTTOM }
+    });
+
+    infoWindow = new google.maps.InfoWindow();
+
+    piezometers.forEach(pz=>{
+      const marker = new google.maps.Marker({
+        position:{ lat: pz.lat, lng: pz.lng },
+        map,
+        title: pz.code,
+        icon:{
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: statusColor[pz.estado],
+          fillOpacity: 1,
+          strokeColor: "#0c1117",
+          strokeWeight: 2,
+          scale: 9
+        }
+      });
+      marker.addListener("click", ()=> selectPiezometer(pz.code, true));
+      pz._marker = marker;
+      markers.push(marker);
+    });
+
+    buildSidebarList();
+    renderCount();
+  }
+
+  function infoContent(pz){
+    return `
+      <div style="font-family:'IBM Plex Sans',sans-serif; color:#111; min-width:190px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; margin-bottom:2px;">${pz.code}</div>
+        <div style="font-size:11.5px; color:#555; margin-bottom:8px;">Piezómetro ${pz.tipo}</div>
+        <div style="font-size:12.5px; line-height:1.6;">
+          <div><b>Lectura:</b> ${pz.valor}</div>
+          <div><b>Fecha:</b> ${pz.fecha}</div>
+          <div><b>Umbral atención:</b> ${pz.umbral}</div>
+          <div><b>Profundidad:</b> ${pz.prof}</div>
+          <div><b>Estado:</b> ${statusLabel[pz.estado]}</div>
+        </div>
+      </div>`;
+  }
+
+  function selectPiezometer(code, fromMap){
+    const pz = piezometers.find(p=>p.code===code);
+    if(!pz) return;
+    selectedCode = code;
+
+    if(!fromMap){ map.panTo({lat:pz.lat, lng:pz.lng}); map.setZoom(18); }
+    infoWindow.setContent(infoContent(pz));
+    infoWindow.open(map, pz._marker);
+
+    document.querySelectorAll(".piezo-item").forEach(el=>{
+      el.classList.toggle("sel", el.dataset.code===code);
+    });
+
+    document.getElementById("d-code").textContent = pz.code;
+    document.getElementById("d-type").textContent = "Piezómetro " + pz.tipo;
+    document.getElementById("d-valor").textContent = pz.valor;
+    document.getElementById("d-fecha").textContent = pz.fecha;
+    document.getElementById("d-umbral").textContent = pz.umbral;
+    document.getElementById("d-prof").textContent = pz.prof;
+    document.getElementById("d-inst").textContent = pz.inst;
+    const badge = document.getElementById("d-badge");
+    badge.textContent = statusLabel[pz.estado];
+    badge.className = "badge " + pz.estado;
+    document.getElementById("detail-panel").classList.add("open");
+  }
+
+  function buildSidebarList(){
+    const listEl = document.getElementById("piezo-list");
+    const query = document.getElementById("search-input").value.trim().toLowerCase();
+    listEl.innerHTML = "";
+    const filtered = piezometers.filter(pz=>{
+      const matchFilter = currentFilter==="todos" || pz.estado===currentFilter;
+      const matchSearch = pz.code.toLowerCase().includes(query);
+      return matchFilter && matchSearch;
+    });
+    filtered.forEach(pz=>{
+      const item = document.createElement("div");
+      item.className = "piezo-item" + (pz.code===selectedCode ? " sel" : "");
+      item.dataset.code = pz.code;
+      item.innerHTML = `
+        <span class="status-dot ${pz.estado}"></span>
+        <span class="info">
+          <span class="code">${pz.code}</span><br>
+          <span class="type">${pz.tipo}</span>
+        </span>
+        <span class="val">${pz.valor}</span>`;
+      item.addEventListener("click", ()=> selectPiezometer(pz.code, false));
+      listEl.appendChild(item);
+    });
+    renderCount(filtered.length);
+  }
+
+  function renderCount(n){
+    document.getElementById("piezo-count").textContent = (n===undefined ? piezometers.length : n);
+  }
+
+  document.getElementById("search-input").addEventListener("input", buildSidebarList);
+  document.querySelectorAll(".filter-chip").forEach(chip=>{
+    chip.addEventListener("click", ()=>{
+      document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));
+      chip.classList.add("active");
+      currentFilter = chip.dataset.filter;
+      buildSidebarList();
+    });
+  });
+  document.getElementById("detail-close").addEventListener("click", ()=>{
+    document.getElementById("detail-panel").classList.remove("open");
+    infoWindow.close();
+    selectedCode = null;
+    document.querySelectorAll(".piezo-item").forEach(el=>el.classList.remove("sel"));
+  });
+  document.querySelectorAll("#maptype-seg button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("#maptype-seg button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      if(map) map.setMapTypeId(btn.dataset.type);
+    });
+  });
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkKC2qMimEQ05wpOg3b0-lMr9cK9hpmYo&callback=initMap&v=weekly" async defer></script>
+</body>
+</html>

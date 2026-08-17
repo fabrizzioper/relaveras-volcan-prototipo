@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECO2BIZ · Monitoreo geotécnico — Volcán</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c1117;
+    --panel:#141b24;
+    --panel-raised:#1b2430;
+    --panel-hover:#212b39;
+    --border:#293345;
+    --border-strong:#3a465a;
+    --text-primary:#e9edf3;
+    --text-secondary:#8d97aa;
+    --text-muted:#5c6779;
+    --accent:#4f9bd6;
+    --accent-dim:#274a68;
+    --accent-bg:#132534;
+    --teal:#33ab8c;
+    --teal-bg:#0f2620;
+    --amber:#dfa93d;
+    --amber-bg:#2b2110;
+    --red:#e2635c;
+    --red-bg:#2c1717;
+    --violet:#9089e0;
+    --violet-bg:#1e1c33;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'IBM Plex Sans',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+    --radius:8px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    font-size:14px;
+    line-height:1.5;
+    display:flex;
+    min-height:100vh;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--accent-dim); color:#fff;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:232px;
+    flex-shrink:0;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:20px 14px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 8px 20px;
+    margin-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    width:32px; height:32px; border-radius:7px;
+    background:linear-gradient(155deg, var(--accent) 0%, var(--violet) 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:14px; color:#0c1117;
+    flex-shrink:0;
+  }
+  .brand-text{display:flex; flex-direction:column;}
+  .brand-text .name{font-family:var(--font-display); font-weight:600; font-size:15px; letter-spacing:0.2px;}
+  .brand-text .client{font-size:11px; color:var(--text-secondary); font-family:var(--font-mono);}
+
+  .nav-label{
+    font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--text-muted); padding:14px 10px 6px;
+  }
+  .nav{display:flex; flex-direction:column; gap:2px;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:6px;
+    color:var(--text-secondary); font-size:13px; font-weight:500;
+    cursor:pointer; border:none; background:none; text-align:left; width:100%;
+    font-family:var(--font-body);
+  }
+  .nav-item:hover{background:var(--panel-hover); color:var(--text-primary);}
+  .nav-item.active{background:var(--accent-bg); color:var(--accent);}
+  .nav-item .dot{width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0.0; flex-shrink:0;}
+  .nav-item.active .dot{opacity:1;}
+
+  .sidebar-foot{
+    margin-top:auto; padding-top:14px; border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:9px;
+  }
+  .status-pulse{
+    width:8px; height:8px; border-radius:50%; background:var(--teal);
+    box-shadow:0 0 0 0 rgba(51,171,140,0.5);
+    animation:pulse 2.2s infinite;
+    flex-shrink:0;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(51,171,140,0.45);}
+    70%{box-shadow:0 0 0 7px rgba(51,171,140,0);}
+    100%{box-shadow:0 0 0 0 rgba(51,171,140,0);}
+  }
+  .sidebar-foot .txt{font-size:11.5px; color:var(--text-secondary); font-family:var(--font-mono);}
+
+  /* ---------- Main ---------- */
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+
+  .topbar{
+    display:flex; align-items:center; gap:16px;
+    padding:16px 28px;
+    border-bottom:1px solid var(--border);
+    background:var(--panel);
+  }
+  .topbar h1{font-family:var(--font-display); font-size:18px; font-weight:600;}
+  .topbar .sub{font-size:12px; color:var(--text-secondary); margin-top:2px;}
+  .spacer{flex:1;}
+  select, input[type=text]{
+    background:var(--panel-raised); border:1px solid var(--border-strong);
+    color:var(--text-primary); font-family:var(--font-body); font-size:13px;
+    padding:8px 10px; border-radius:6px;
+  }
+  .clock{font-family:var(--font-mono); font-size:12.5px; color:var(--text-secondary); white-space:nowrap;}
+  .btn{
+    background:var(--panel-raised); border:1px solid var(--border-strong);
+    color:var(--text-primary); font-family:var(--font-body); font-size:13px; font-weight:500;
+    padding:8px 14px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{background:var(--panel-hover);}
+  .btn-accent{background:var(--accent); border-color:var(--accent); color:#0a1420;}
+  .btn-accent:hover{background:#63a9de;}
+
+  /* seismic divider */
+  .seismic{width:100%; height:22px; overflow:hidden; background:var(--bg); border-bottom:1px solid var(--border);}
+  .seismic svg{display:block;}
+  .seismic path{
+    fill:none; stroke:var(--accent); stroke-width:1.2; opacity:0.55;
+    stroke-dasharray:900; stroke-dashoffset:900;
+    animation:trace 5.5s linear infinite;
+  }
+  @keyframes trace{ to{ stroke-dashoffset:0; } }
+
+  .content{padding:26px 28px 60px; overflow-y:auto;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  h2.section-title{font-family:var(--font-display); font-size:16px; font-weight:600; margin-bottom:14px;}
+  .helper{font-size:12.5px; color:var(--text-secondary); margin-bottom:18px; max-width:640px;}
+
+  /* ---------- Cards / grid ---------- */
+  .kpi-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:22px;}
+  .kpi{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 14px 12px;
+  }
+  .kpi.warn{background:var(--amber-bg); border-color:#4a3a17;}
+  .kpi-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .kpi-head .label{font-size:11.5px; color:var(--text-secondary);}
+  .kpi.warn .label{color:var(--amber);}
+  .kpi-value{font-family:var(--font-display); font-size:24px; font-weight:600;}
+  .kpi-value small{font-family:var(--font-body); font-size:12px; color:var(--text-muted); font-weight:400;}
+  .kpi-sub{font-size:11px; color:var(--text-secondary); margin-top:4px;}
+  .kpi.warn .kpi-sub{color:#e9c98a;}
+
+  .icon-dot{width:14px; height:14px; border-radius:50%; display:inline-block; position:relative;}
+  .icon-dot.ok{background:transparent; border:1.5px solid var(--teal);}
+  .icon-dot.ok::after{content:''; position:absolute; inset:3px; border-radius:50%; background:var(--teal);}
+  .icon-dot.warn{background:transparent; border:1.5px solid var(--amber);}
+  .icon-dot.warn::after{content:''; position:absolute; inset:3px; border-radius:50%; background:var(--amber);}
+
+  .grid-2{display:grid; grid-template-columns:2fr 1fr; gap:16px;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px 20px;}
+  .panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .panel-head .title{font-size:14px; font-weight:600;}
+  .seg{display:flex; gap:4px; background:var(--panel-raised); border-radius:6px; padding:3px;}
+  .seg button{
+    background:none; border:none; color:var(--text-secondary); font-size:12px; font-family:var(--font-body);
+    padding:5px 10px; border-radius:5px; cursor:pointer;
+  }
+  .seg button.active{background:var(--accent-bg); color:var(--accent);}
+
+  .legend{display:flex; gap:14px; margin-top:10px; font-size:11.5px; color:var(--text-secondary); flex-wrap:wrap;}
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .swatch{width:9px; height:9px; border-radius:2px; display:inline-block;}
+
+  /* Alerts list */
+  .alert-item{
+    border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px;
+    display:flex; flex-direction:column; gap:3px;
+  }
+  .alert-item.crit{border-color:#4a3a17; background:var(--amber-bg);}
+  .alert-item .row{display:flex; justify-content:space-between; align-items:center;}
+  .alert-item .name{font-size:13px; font-weight:600;}
+  .alert-item.crit .name{color:var(--amber);}
+  .alert-item .meta{font-size:11.5px; color:var(--text-secondary);}
+  .badge{font-size:10.5px; font-family:var(--font-mono); padding:2px 7px; border-radius:20px; border:1px solid var(--border-strong);}
+  .badge.crit{color:var(--amber); border-color:#5a4720; background:rgba(223,169,61,0.08);}
+  .badge.ok{color:var(--teal); border-color:#1c4f41; background:rgba(51,171,140,0.08);}
+  .badge.info{color:var(--accent); border-color:var(--accent-dim); background:rgba(79,155,214,0.08);}
+
+  /* Tables */
+  table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--text-muted); font-weight:500; padding:9px 12px; border-bottom:1px solid var(--border-strong);
+  }
+  td{padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-primary);}
+  tr:last-child td{border-bottom:none;}
+  td.mono, th.mono{font-family:var(--font-mono);}
+  tr:hover td{background:var(--panel-hover);}
+  .th-input{
+    width:64px; background:var(--panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
+    font-family:var(--font-mono); font-size:12px; padding:5px 6px; border-radius:5px;
+  }
+
+  /* Plan view */
+  .plan-wrap{display:grid; grid-template-columns:2fr 1fr; gap:16px;}
+  .plan-svg-wrap{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;}
+  .marker-list .item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 10px; border-radius:6px; cursor:pointer; margin-bottom:4px;
+  }
+  .marker-list .item:hover{background:var(--panel-hover);}
+  .marker-list .item.sel{background:var(--accent-bg);}
+  .gmaps-banner{
+    background:var(--amber-bg); border:1px solid #4a3a17; color:var(--amber);
+    font-size:12px; padding:9px 14px; border-radius:8px; margin-bottom:14px;
+  }
+  .gmaps-banner code{background:rgba(0,0,0,0.25); padding:2px 6px; border-radius:4px; font-family:var(--font-mono); font-size:11px;}
+  .filters{display:flex; gap:6px; flex-wrap:wrap;}
+  .filter-chip{
+    font-size:11px; padding:4px 9px; border-radius:20px; border:1px solid var(--border-strong);
+    color:var(--text-secondary); cursor:pointer; background:none; font-family:var(--font-body);
+  }
+  .filter-chip.active{color:var(--accent); border-color:var(--accent-dim); background:var(--accent-bg);}
+
+  /* Report list */
+  .report-row{
+    display:flex; align-items:center; gap:14px; padding:12px 14px;
+    border:1px solid var(--border); border-radius:8px; margin-bottom:8px;
+  }
+  .report-icon{
+    width:34px; height:34px; border-radius:7px; background:var(--panel-raised);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-family:var(--font-mono); font-size:10px; color:var(--accent); border:1px solid var(--border-strong);
+  }
+  .report-row .info{flex:1;}
+  .report-row .fname{font-size:13px; font-weight:500;}
+  .report-row .fmeta{font-size:11.5px; color:var(--text-secondary); margin-top:2px;}
+
+  footer.sr{position:absolute; width:1px; height:1px; overflow:hidden;}
+
+  @media (max-width:1000px){
+    .sidebar{position:fixed; z-index:20; transform:translateX(-100%); transition:transform .2s;}
+    .sidebar.open{transform:translateX(0);}
+    .kpi-grid{grid-template-columns:repeat(3,1fr);}
+    .grid-2, .plan-wrap{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar" aria-label="Navegación principal">
+  <div class="brand">
+    <div class="brand-mark">E2</div>
+    <div class="brand-text">
+      <span class="name">ECO2BIZ</span>
+      <span class="client">VOLCÁN · RELAVERAS</span>
+    </div>
+  </div>
+
+  <div class="nav-label">Monitoreo</div>
+  <div class="nav">
+    <button class="nav-item active" data-view="resumen"><span class="dot"></span>Resumen general</button>
+    <button class="nav-item" data-view="seccion"><span class="dot"></span>Sección instrumentada</button>
+    <button class="nav-item" data-view="planta"><span class="dot"></span>Vista en planta</button>
+  </div>
+
+  <div class="nav-label">Gestión</div>
+  <div class="nav">
+    <button class="nav-item" data-view="umbrales"><span class="dot"></span>Umbrales y alertas</button>
+    <button class="nav-item" data-view="inventario"><span class="dot"></span>Inventario</button>
+    <button class="nav-item" data-view="reportes"><span class="dot"></span>Reportes</button>
+  </div>
+
+  <div class="sidebar-foot">
+    <span class="status-pulse" aria-hidden="true"></span>
+    <span class="txt">Telemetría conectada</span>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="view-title">Resumen general</h1>
+      <div class="sub" id="view-sub">Estado consolidado de instrumentación geotécnica</div>
+    </div>
+    <div class="spacer"></div>
+    <select id="site-select" aria-label="Seleccionar relavera">
+      <option>Relavera N°4 — Cerro de Pasco</option>
+      <option>Relavera Rumiallana</option>
+      <option>Relavera Ticlio</option>
+    </select>
+    <span class="clock" id="clock" aria-live="off"></span>
+    <button class="btn btn-accent"><span aria-hidden="true">&#8635;</span>Actualizar</button>
+  </div>
+
+  <div class="seismic" aria-hidden="true">
+    <svg viewBox="0 0 1200 22" preserveAspectRatio="none" width="100%" height="22">
+      <path d="M0,11 L120,11 L135,4 L150,19 L165,11 L300,11 L315,2 L325,20 L335,11 L500,11 L515,6 L528,16 L540,11 L720,11 L735,3 L748,19 L760,11 L950,11 L965,5 L978,17 L990,11 L1200,11"/>
+    </svg>
+  </div>
+
+  <div class="content">
+
+    <!-- ================= VISTA: RESUMEN ================= -->
+    <section class="view active" id="view-resumen">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-head"><span class="label">Piezómetros</span><span class="icon-dot ok"></span></div><div class="kpi-value">42<small> / 44</small></div><div class="kpi-sub">Casagrande + cuerda vibrante</div></div>
+        <div class="kpi"><div class="kpi-head"><span class="label">Inclinómetros</span><span class="icon-dot ok"></span></div><div class="kpi-value">12<small> / 12</small></div><div class="kpi-sub">Multi-profundidad</div></div>
+        <div class="kpi"><div class="kpi-head"><span class="label">Acelerógrafos</span><span class="icon-dot ok"></span></div><div class="kpi-value">6<small> / 6</small></div><div class="kpi-sub">Sin eventos en 24h</div></div>
+        <div class="kpi warn"><div class="kpi-head"><span class="label">InSAR</span><span class="icon-dot warn"></span></div><div class="kpi-value">1 zona</div><div class="kpi-sub">Deformación sobre umbral</div></div>
+        <div class="kpi"><div class="kpi-head"><span class="label">Celdas asent.</span><span class="icon-dot ok"></span></div><div class="kpi-value">18<small> / 18</small></div><div class="kpi-sub">Base y cuerpo de presa</div></div>
+        <div class="kpi"><div class="kpi-head"><span class="label">Disponibilidad</span><span class="icon-dot ok"></span></div><div class="kpi-value">98.6<small>%</small></div><div class="kpi-sub">Últimas 24 horas</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="title">Presión de poros — Sección A-A' (PZ-14, PZ-15)</span>
+            <div class="seg">
+              <button data-range="7">7d</button>
+              <button class="active" data-range="30">30d</button>
+              <button data-range="90">90d</button>
+            </div>
+          </div>
+          <div style="position:relative; height:230px;"><canvas id="chartResumen"></canvas></div>
+          <div class="legend">
+            <span><span class="swatch" style="background:#4f9bd6"></span>PZ-14</span>
+            <span><span class="swatch" style="background:#33ab8c"></span>PZ-15</span>
+            <span><span class="swatch" style="background:#dfa93d"></span>Umbral de atención</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span class="title">Alertas activas</span>
+            <span class="badge crit">3</span>
+          </div>
+          <div class="alert-item crit">
+            <div class="row"><span class="name">InSAR — Talud sur</span><span class="badge crit">Atención</span></div>
+            <span class="meta">Deformación 12 mm/año, sobre nivel de atención</span>
+          </div>
+          <div class="alert-item">
+            <div class="row"><span class="name">INC-07 · prof. 18 m</span><span class="badge ok">Normal</span></div>
+            <span class="meta">Desplazamiento acumulado dentro de rango</span>
+          </div>
+          <div class="alert-item">
+            <div class="row"><span class="name">PZ-02 Casagrande</span><span class="badge info">Pendiente</span></div>
+            <span class="meta">Lectura manual pendiente hace 6 días</span>
+          </div>
+          <button class="btn" style="width:100%; justify-content:center; margin-top:8px;">Ver todas las alertas</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VISTA: SECCIÓN INSTRUMENTADA ================= -->
+    <section class="view" id="view-seccion">
+      <p class="helper">Comparación de lecturas de los instrumentos ubicados sobre una misma sección transversal, para evaluar en conjunto la superficie freática y el comportamiento del talud.</p>
+
+      <div class="panel-head" style="margin-bottom:16px;">
+        <select style="min-width:220px;" aria-label="Seleccionar sección">
+          <option>Sección A-A' — Talud sur</option>
+          <option>Sección B-B' — Talud oeste</option>
+          <option>Sección C-C' — Dique principal</option>
+        </select>
+        <div class="seg">
+          <button data-range="7">7d</button>
+          <button class="active" data-range="30">30d</button>
+          <button data-range="90">90d</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><span class="title">PZ-14, PZ-15, PZ-16 · INC-07 (18 m)</span></div>
+          <div style="position:relative; height:280px;"><canvas id="chartSeccion"></canvas></div>
+          <div class="legend">
+            <span><span class="swatch" style="background:#4f9bd6"></span>PZ-14 (m.c.a.)</span>
+            <span><span class="swatch" style="background:#33ab8c"></span>PZ-15 (m.c.a.)</span>
+            <span><span class="swatch" style="background:#9089e0"></span>INC-07 (mm, eje der.)</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="title">Lecturas actuales</span></div>
+          <table>
+            <tr><td>PZ-14</td><td class="mono" style="text-align:right;">28.4 m.c.a.</td></tr>
+            <tr><td>PZ-15</td><td class="mono" style="text-align:right;">24.1 m.c.a.</td></tr>
+            <tr><td>PZ-16</td><td class="mono" style="text-align:right;">26.7 m.c.a.</td></tr>
+            <tr><td>INC-07 (18 m)</td><td class="mono" style="text-align:right;">4.2 mm</td></tr>
+            <tr><td>CA-03</td><td class="mono" style="text-align:right;">11.8 mm</td></tr>
+          </table>
+          <button class="btn" style="width:100%; justify-content:center; margin-top:14px;">Exportar vista como imagen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VISTA: PLANTA (Google Maps satelital) ================= -->
+    <section class="view" id="view-planta">
+      <p class="helper">Ubicación georreferenciada de los instrumentos sobre imagen satelital real, con la capa de deformación superficial InSAR superpuesta.</p>
+
+      <div id="gmaps-banner" class="gmaps-banner" style="display:none;">
+        &#9888; Para activar el mapa satelital, reemplaza <code>AIzaSyAkKC2qMimEQ05wpOg3b0-lMr9cK9hpmYo</code> al final del HTML por tu API key de Google Maps con la Maps JavaScript API habilitada.
+      </div>
+
+      <div class="plan-wrap">
+        <div class="plan-svg-wrap" style="padding:0; overflow:hidden;">
+          <div id="gmap" style="width:100%; height:460px;"></div>
+          <div class="legend" style="padding:10px 14px;">
+            <span><span class="swatch" style="background:#33ab8c; border-radius:50%;"></span>Piezómetro</span>
+            <span><span class="swatch" style="background:#4f9bd6; border-radius:50%;"></span>Inclinómetro</span>
+            <span><span class="swatch" style="background:#9089e0; border-radius:50%;"></span>Celda de asentamiento</span>
+            <span><span class="swatch" style="background:#dfa93d;"></span>Zona InSAR sobre umbral</span>
+          </div>
+        </div>
+
+        <div class="panel marker-list">
+          <div class="panel-head"><span class="title">Instrumentos en el plano</span></div>
+          <div class="filters" style="padding:0 0 10px;">
+            <button class="filter-chip active" data-mfilter="todos">Todos</button>
+            <button class="filter-chip" data-mfilter="piezometro">Piezómetros</button>
+            <button class="filter-chip" data-mfilter="inclinometro">Inclinómetros</button>
+            <button class="filter-chip" data-mfilter="celda">Celdas</button>
+            <button class="filter-chip" data-mfilter="insar">InSAR</button>
+          </div>
+          <div id="marker-list-items"></div>
+          <div class="panel" style="margin-top:12px; background:var(--panel-raised); border-style:dashed;">
+            <div style="font-size:12px; color:var(--text-secondary);" id="marker-detail">Selecciona un instrumento o una zona InSAR en el mapa o en la lista para ver su detalle.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VISTA: UMBRALES ================= -->
+    <section class="view" id="view-umbrales">
+      <p class="helper">Configuración de niveles de atención, alerta, alarma y emergencia por instrumento. Los cambios quedan registrados con usuario y fecha para trazabilidad.</p>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Instrumento</th><th>Tipo</th>
+              <th class="mono">Atención</th><th class="mono">Alerta</th><th class="mono">Alarma</th><th class="mono">Emergencia</th>
+              <th>Estado actual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>PZ-14</td><td>Piezómetro CV</td><td><input class="th-input" value="30.0"></td><td><input class="th-input" value="33.0"></td><td><input class="th-input" value="36.0"></td><td><input class="th-input" value="40.0"></td><td><span class="badge ok">Normal</span></td></tr>
+            <tr><td>PZ-15</td><td>Piezómetro CV</td><td><input class="th-input" value="27.0"></td><td><input class="th-input" value="30.0"></td><td><input class="th-input" value="33.0"></td><td><input class="th-input" value="37.0"></td><td><span class="badge ok">Normal</span></td></tr>
+            <tr><td>INC-07</td><td>Inclinómetro</td><td><input class="th-input" value="10.0"></td><td><input class="th-input" value="15.0"></td><td><input class="th-input" value="20.0"></td><td><input class="th-input" value="30.0"></td><td><span class="badge ok">Normal</span></td></tr>
+            <tr><td>InSAR — Talud sur</td><td>InSAR</td><td><input class="th-input" value="8.0"></td><td><input class="th-input" value="12.0"></td><td><input class="th-input" value="18.0"></td><td><input class="th-input" value="25.0"></td><td><span class="badge crit">Atención</span></td></tr>
+            <tr><td>CA-03</td><td>Celda asent.</td><td><input class="th-input" value="15.0"></td><td><input class="th-input" value="22.0"></td><td><input class="th-input" value="30.0"></td><td><input class="th-input" value="40.0"></td><td><span class="badge ok">Normal</span></td></tr>
+            <tr><td>AC-02</td><td>Acelerógrafo (PGA g)</td><td><input class="th-input" value="0.05"></td><td><input class="th-input" value="0.10"></td><td><input class="th-input" value="0.20"></td><td><input class="th-input" value="0.35"></td><td><span class="badge ok">Normal</span></td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+          <button class="btn">Descartar cambios</button>
+          <button class="btn btn-accent">Guardar umbrales</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VISTA: INVENTARIO ================= -->
+    <section class="view" id="view-inventario">
+      <p class="helper">Inventario georreferenciado de instrumentos con su ficha técnica y estado operativo, base para el conector de ingesta y para la trazabilidad de calibración.</p>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr><th>Código</th><th>Tipo</th><th>Profundidad</th><th>Instalación</th><th>Última calibración</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">PZ-14</td><td>Piezómetro cuerda vibrante</td><td class="mono">— </td><td class="mono">2019-03-11</td><td class="mono">2026-02-10</td><td><span class="badge ok">Operativo</span></td></tr>
+            <tr><td class="mono">PZ-02</td><td>Piezómetro Casagrande</td><td class="mono">—</td><td class="mono">2015-07-22</td><td class="mono">2025-11-04</td><td><span class="badge info">Lectura pendiente</span></td></tr>
+            <tr><td class="mono">INC-07</td><td>Inclinómetro</td><td class="mono">0–30 m</td><td class="mono">2018-01-15</td><td class="mono">2026-01-20</td><td><span class="badge ok">Operativo</span></td></tr>
+            <tr><td class="mono">AC-02</td><td>Acelerógrafo</td><td class="mono">Superficial</td><td class="mono">2020-05-09</td><td class="mono">2025-09-30</td><td><span class="badge ok">Operativo</span></td></tr>
+            <tr><td class="mono">CA-03</td><td>Celda de asentamiento</td><td class="mono">Base de presa</td><td class="mono">2017-11-02</td><td class="mono">2025-12-18</td><td><span class="badge ok">Operativo</span></td></tr>
+            <tr><td class="mono">INSAR-S1</td><td>InSAR (procesamiento satelital)</td><td class="mono">Cobertura talud sur</td><td class="mono">2022-06-01</td><td class="mono">N/A</td><td><span class="badge crit">Zona en atención</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= VISTA: REPORTES ================= -->
+    <section class="view" id="view-reportes">
+      <p class="helper">Reportes periódicos generados automáticamente, archivados con fecha de emisión para trazabilidad ante ANA, OEFA y auditorías internas.</p>
+      <div class="report-row">
+        <div class="report-icon">PDF</div>
+        <div class="info">
+          <div class="fname">Reporte mensual de monitoreo geotécnico — julio 2026</div>
+          <div class="fmeta">Relavera N°4 · Emitido 2026-08-02 · Piezómetros, inclinómetros, InSAR</div>
+        </div>
+        <button class="btn">Descargar</button>
+      </div>
+      <div class="report-row">
+        <div class="report-icon">PDF</div>
+        <div class="info">
+          <div class="fname">Reporte mensual de monitoreo geotécnico — junio 2026</div>
+          <div class="fmeta">Relavera N°4 · Emitido 2026-07-02 · Todos los instrumentos</div>
+        </div>
+        <button class="btn">Descargar</button>
+      </div>
+      <div class="report-row">
+        <div class="report-icon">XLS</div>
+        <div class="info">
+          <div class="fname">Exportación de lecturas históricas — 2° trimestre 2026</div>
+          <div class="fmeta">Relavera N°4 · Emitido 2026-07-05 · Piezómetros y celdas de asentamiento</div>
+        </div>
+        <button class="btn">Descargar</button>
+      </div>
+      <div class="report-row">
+        <div class="report-icon">PDF</div>
+        <div class="info">
+          <div class="fname">Informe de evento sísmico — 14 de junio 2026</div>
+          <div class="fmeta">Estación AC-02 · PGA 0.06 g · Sin superación de umbral en instrumentos asociados</div>
+        </div>
+        <button class="btn">Descargar</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  // ---- Navegación entre vistas ----
+  const navItems = document.querySelectorAll('.nav-item');
+  const views = document.querySelectorAll('.view');
+  const titles = {
+    resumen:  ['Resumen general', 'Estado consolidado de instrumentación geotécnica'],
+    seccion:  ['Sección instrumentada', 'Comparación de instrumentos sobre una misma sección transversal'],
+    planta:   ['Vista en planta', 'Ubicación de instrumentos y capa de deformación InSAR'],
+    umbrales: ['Umbrales y alertas', 'Configuración de niveles de atención, alerta, alarma y emergencia'],
+    inventario:['Inventario de instrumentos', 'Ficha técnica y estado operativo por instrumento'],
+    reportes: ['Reportes', 'Reportería periódica y trazabilidad documental']
+  };
+  navItems.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      navItems.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const key = btn.dataset.view;
+      views.forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-'+key).classList.add('active');
+      document.getElementById('view-title').textContent = titles[key][0];
+      document.getElementById('view-sub').textContent = titles[key][1];
+      if(key === 'planta'){
+        if(!window.gmapCreated && window.gmapsApiLoaded) createGMap();
+        else if(window.gmapCreated) google.maps.event.trigger(window.gmapInstance, 'resize');
+      }
+    });
+  });
+
+  // ---- Reloj ----
+  function tick(){
+    const d = new Date();
+    document.getElementById('clock').textContent = d.toLocaleString('es-PE', {
+      day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ---- Datos de series (compartidos) ----
+  function series(base, amp, noise, n){
+    return Array.from({length:n}, (_,i)=> Math.round((base + amp*Math.sin(i/6) + (Math.random()-0.5)*noise)*10)/10);
+  }
+  const labels30 = Array.from({length:30}, (_,i)=>'D'+(i+1));
+
+  const commonScales = {
+    x:{ ticks:{ maxTicksLimit:6, font:{size:10.5}, color:'#8d97aa' }, grid:{display:false}, border:{color:'#293345'} },
+  };
+
+  new Chart(document.getElementById('chartResumen'), {
+    type:'line',
+    data:{ labels: labels30, datasets:[
+      { label:'PZ-14', data: series(28,3,1,30), borderColor:'#4f9bd6', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3 },
+      { label:'PZ-15', data: series(24,2.5,1,30), borderColor:'#33ab8c', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3 },
+      { label:'Umbral', data: labels30.map(()=>32), borderColor:'#dfa93d', borderDash:[4,4], borderWidth:1.4, pointRadius:0 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:commonScales.x, y:{ title:{display:true,text:'m.c.a.',font:{size:10.5},color:'#8d97aa'}, ticks:{font:{size:10.5},color:'#8d97aa'}, grid:{color:'#1c2430'}, border:{color:'#293345'} } } }
+  });
+
+  new Chart(document.getElementById('chartSeccion'), {
+    type:'line',
+    data:{ labels: labels30, datasets:[
+      { label:'PZ-14', data: series(28,3,1,30), borderColor:'#4f9bd6', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y' },
+      { label:'PZ-15', data: series(24,2.5,1,30), borderColor:'#33ab8c', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y' },
+      { label:'INC-07', data: series(4,1.2,0.4,30), borderColor:'#9089e0', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y1' }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{
+        x:commonScales.x,
+        y:{ position:'left', title:{display:true,text:'m.c.a.',font:{size:10.5},color:'#8d97aa'}, ticks:{font:{size:10.5},color:'#8d97aa'}, grid:{color:'#1c2430'}, border:{color:'#293345'} },
+        y1:{ position:'right', title:{display:true,text:'mm',font:{size:10.5},color:'#8d97aa'}, ticks:{font:{size:10.5},color:'#8d97aa'}, grid:{display:false}, border:{color:'#293345'} }
+      } }
+  });
+
+  // ---- Segmented range buttons (visual only) ----
+  document.querySelectorAll('.seg').forEach(seg=>{
+    seg.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        seg.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  });
+
+  // ---- Vista en planta: instrumentos georreferenciados sobre Google Maps ----
+  // Reemplazar lat/lng por las coordenadas reales levantadas en campo.
+  const instrumentData = {
+    'PZ-14': {cat:'piezometro', tipo:'Piezómetro de cuerda vibrante', valor:'28.4 m.c.a.', estado:'normal', lat:-10.6749, lng:-76.2571},
+    'PZ-15': {cat:'piezometro', tipo:'Piezómetro de cuerda vibrante', valor:'24.1 m.c.a.', estado:'normal', lat:-10.6745, lng:-76.2559},
+    'PZ-16': {cat:'piezometro', tipo:'Piezómetro de cuerda vibrante', valor:'33.1 m.c.a.', estado:'atencion', lat:-10.6738, lng:-76.2548},
+    'INC-07':{cat:'inclinometro', tipo:'Inclinómetro (0-30 m)', valor:'4.2 mm acumulado', estado:'normal', lat:-10.6759, lng:-76.2549},
+    'INC-08':{cat:'inclinometro', tipo:'Inclinómetro (0-30 m)', valor:'3.6 mm acumulado', estado:'normal', lat:-10.6752, lng:-76.2538},
+    'CA-03': {cat:'celda', tipo:'Celda de asentamiento', valor:'11.8 mm', estado:'normal', lat:-10.6764, lng:-76.2560},
+    'CA-04': {cat:'celda', tipo:'Celda de asentamiento', valor:'9.4 mm', estado:'normal', lat:-10.6741, lng:-76.2532}
+  };
+  const catColor = { piezometro:'#33ab8c', inclinometro:'#4f9bd6', celda:'#9089e0' };
+  const catBadge = { normal:'ok', atencion:'crit', alarma:'crit' };
+  const estadoLabel = { normal:'Normal', atencion:'Atención', alarma:'Alarma' };
+
+  // Zonas de deformación InSAR (HU-08). Reemplazar por las zonas y coordenadas reales.
+  const insarZones = {
+    'INSAR-TS': {
+      nombre:'Talud sur', estado:'atencion', mmAno:12.4, fechaPasada:'2026-08-14', umbral:8.0,
+      paths:[
+        {lat:-10.6768, lng:-76.2562}, {lat:-10.6768, lng:-76.2540},
+        {lat:-10.6758, lng:-76.2532}, {lat:-10.6752, lng:-76.2562}
+      ],
+      center:{lat:-10.6762, lng:-76.2549}
+    }
+  };
+
+  let mFilter = 'todos';
+  const listWrap = document.getElementById('marker-list-items');
+
+  function buildMarkerList(){
+    listWrap.innerHTML = '';
+    Object.keys(instrumentData).forEach(id=>{
+      const d = instrumentData[id];
+      if(mFilter !== 'todos' && d.cat !== mFilter) return;
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.dataset.id = id;
+      el.innerHTML = '<span class="mono" style="font-family:var(--font-mono); font-size:12.5px;">'+id+'</span><span class="badge '+catBadge[d.estado]+'">'+estadoLabel[d.estado]+'</span>';
+      el.addEventListener('click', ()=> selectInstrument(id));
+      listWrap.appendChild(el);
+    });
+    if(mFilter === 'todos' || mFilter === 'insar'){
+      Object.keys(insarZones).forEach(id=>{
+        const z = insarZones[id];
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.dataset.id = id;
+        el.innerHTML = '<span class="mono" style="font-family:var(--font-mono); font-size:12.5px;">'+z.nombre+'</span><span class="badge '+catBadge[z.estado]+'">'+estadoLabel[z.estado]+'</span>';
+        el.addEventListener('click', ()=> selectInsarZone(id));
+        listWrap.appendChild(el);
+      });
+    }
+  }
+  document.querySelectorAll('[data-mfilter]').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-mfilter]').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      mFilter = chip.dataset.mfilter;
+      buildMarkerList();
+    });
+  });
+  buildMarkerList();
+
+  function selectInstrument(id){
+    document.querySelectorAll('.marker-list .item').forEach(i=>i.classList.toggle('sel', i.dataset.id===id));
+    const d = instrumentData[id];
+    document.getElementById('marker-detail').innerHTML =
+      '<div style="font-family:var(--font-mono); font-size:13px; color:var(--text-primary); margin-bottom:4px;">'+id+'</div>'+
+      '<div style="color:var(--text-secondary); margin-bottom:6px;">'+d.tipo+'</div>'+
+      '<div style="font-family:var(--font-mono); font-size:16px; color:var(--accent); margin-bottom:6px;">'+d.valor+'</div>'+
+      '<span class="badge '+catBadge[d.estado]+'">'+estadoLabel[d.estado]+'</span>';
+    if(window.gmapCreated && d._marker){
+      window.gmapInstance.panTo({lat:d.lat, lng:d.lng});
+      window.gmapInfoWindow.setContent(
+        '<div style="font-family:IBM Plex Sans,sans-serif; color:#111; min-width:170px;">'+
+        '<div style="font-family:IBM Plex Mono,monospace; font-weight:600; font-size:13px;">'+id+'</div>'+
+        '<div style="font-size:11px; color:#555; margin-bottom:6px;">'+d.tipo+'</div>'+
+        '<div style="font-size:12px;">Lectura: '+d.valor+'<br>Estado: '+estadoLabel[d.estado]+'</div></div>'
+      );
+      window.gmapInfoWindow.open(window.gmapInstance, d._marker);
+    }
+  }
+
+  // HU-08 — Capa de deformación superficial InSAR: clic en la zona abre el detalle
+  // con mm/año y fecha de la última pasada satelital.
+  function selectInsarZone(id, clickLatLng){
+    document.querySelectorAll('.marker-list .item').forEach(i=>i.classList.toggle('sel', i.dataset.id===id));
+    const z = insarZones[id];
+    document.getElementById('marker-detail').innerHTML =
+      '<div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-bottom:2px;">ZONA INSAR</div>'+
+      '<div style="font-size:14px; color:var(--text-primary); margin-bottom:8px;">'+z.nombre+'</div>'+
+      '<div style="font-family:var(--font-mono); font-size:20px; color:var(--amber); margin-bottom:2px;">'+z.mmAno.toFixed(1)+' mm/año</div>'+
+      '<div style="color:var(--text-secondary); font-size:11.5px; margin-bottom:10px;">Deformación superficial</div>'+
+      '<div style="display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-top:1px solid var(--border);"><span style="color:var(--text-secondary);">Última pasada</span><span class="mono" style="font-family:var(--font-mono);">'+z.fechaPasada+'</span></div>'+
+      '<div style="display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-top:1px solid var(--border);"><span style="color:var(--text-secondary);">Umbral atención</span><span class="mono" style="font-family:var(--font-mono);">'+z.umbral.toFixed(1)+' mm/año</span></div>'+
+      '<div style="margin-top:8px;"><span class="badge '+catBadge[z.estado]+'">'+estadoLabel[z.estado]+'</span></div>';
+
+    if(window.gmapCreated && z._polygon){
+      const pos = clickLatLng || z.center;
+      window.gmapInstance.panTo(pos);
+      window.gmapInfoWindow.setContent(
+        '<div style="font-family:IBM Plex Sans,sans-serif; color:#111; min-width:180px;">'+
+        '<div style="font-family:IBM Plex Mono,monospace; font-weight:600; font-size:13px;">'+z.nombre+' — InSAR</div>'+
+        '<div style="font-size:12px; margin-top:4px;">Deformación: '+z.mmAno.toFixed(1)+' mm/año<br>Última pasada: '+z.fechaPasada+'<br>Estado: '+estadoLabel[z.estado]+'</div></div>'
+      );
+      window.gmapInfoWindow.setPosition(pos);
+      window.gmapInfoWindow.open(window.gmapInstance);
+    }
+  }
+
+  // ---- Google Maps: creación diferida (solo cuando la vista es visible) ----
+  window.gmapsApiLoaded = false;
+  window.gmapCreated = false;
+
+  window.initGMaps = function(){
+    window.gmapsApiLoaded = true;
+    if(document.getElementById('view-planta').classList.contains('active')) createGMap();
+  };
+
+  function markerIconFor(cat, estado){
+    const color = estado === 'atencion' ? '#dfa93d' : (estado === 'alarma' ? '#e2635c' : catColor[cat]);
+    if(cat === 'piezometro'){
+      return { path: google.maps.SymbolPath.CIRCLE, fillColor:color, fillOpacity:1, strokeColor:'#0c1117', strokeWeight:2, scale:8 };
+    }
+    if(cat === 'inclinometro'){
+      return { path:'M -6,-6 6,-6 6,6 -6,6 z', fillColor:color, fillOpacity:1, strokeColor:'#0c1117', strokeWeight:2, scale:1 };
+    }
+    return { path:'M 0,-8 7,7 -7,7 z', fillColor:color, fillOpacity:1, strokeColor:'#0c1117', strokeWeight:2, scale:1 };
+  }
+
+  function createGMap(){
+    const center = { lat:-10.6750, lng:-76.2555 };
+    window.gmapInstance = new google.maps.Map(document.getElementById('gmap'), {
+      center, zoom:17, mapTypeId:'hybrid', streetViewControl:false, fullscreenControl:false, mapTypeControl:false
+    });
+    window.gmapInfoWindow = new google.maps.InfoWindow();
+
+    // Zonas de deformación InSAR (HU-08): clic abre el panel con mm/año y fecha de pasada
+    Object.keys(insarZones).forEach(id=>{
+      const z = insarZones[id];
+      const polygon = new google.maps.Polygon({
+        paths: z.paths,
+        strokeColor:'#dfa93d', strokeOpacity:0.9, strokeWeight:1.5,
+        fillColor:'#dfa93d', fillOpacity:0.25, map:window.gmapInstance,
+        clickable:true
+      });
+      polygon.addListener('mouseover', ()=> polygon.setOptions({fillOpacity:0.4}));
+      polygon.addListener('mouseout', ()=> polygon.setOptions({fillOpacity:0.25}));
+      polygon.addListener('click', (e)=> selectInsarZone(id, e.latLng));
+      z._polygon = polygon;
+    });
+
+    Object.keys(instrumentData).forEach(id=>{
+      const d = instrumentData[id];
+      const marker = new google.maps.Marker({
+        position:{lat:d.lat, lng:d.lng}, map:window.gmapInstance, title:id,
+        icon:markerIconFor(d.cat, d.estado)
+      });
+      marker.addListener('click', ()=> selectInstrument(id));
+      d._marker = marker;
+    });
+
+    window.gmapCreated = true;
+  }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkKC2qMimEQ05wpOg3b0-lMr9cK9hpmYo&callback=initGMaps&v=weekly" async defer></script>
+</body>
+</html>
