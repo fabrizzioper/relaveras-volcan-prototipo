@@ -1,15 +1,16 @@
-# ECO2BIZ · Monitoreo geotécnico de relaveras — Volcan
+# ECO2BIZ · Monitoreo geotécnico de relaveras
 
-Prototipo navegable. **El mapa satelital ya está operativo**: se reemplazó el
-placeholder `TU_API_KEY_AQUI` por la API key de Google Maps y se verificó que
-carga la imagen satelital real de Cerro de Pasco con los instrumentos
-georreferenciados.
+Prototipo navegable. **El mapa satelital ya está operativo** y apunta a la
+**relavera Orcopampa (Arequipa)**, en `-15.278304, -72.334352`: los instrumentos
+están distribuidos sobre el borde del vaso y la corona del dique, y la zona InSAR
+sobre el talud suroeste, contrastados uno a uno contra la imagen satelital.
 
 ## Archivos
 
 | Archivo | Qué es |
 |---|---|
 | `index.html` | Plataforma unificada (copia de la V2). Es lo que se abre por defecto al desplegar. |
+| `relavera-orcopampa.jpg` | Foto aérea del depósito. La usa la portada de la plataforma. |
 | `eco2biz_plataforma_unificada_V2.html` | Plataforma completa: resumen, sección instrumentada, **vista en planta con Google Maps + capa InSAR**, umbrales, inventario y reportes. |
 | `eco2biz_mapa_piezometros.html` | Mapa satelital dedicado a piezómetros, con buscador, filtros por estado y panel de detalle. |
 | `eco2biz_monitoreo_volcan.html` | Primer dashboard (sin mapa). |
@@ -26,7 +27,8 @@ Abre en el navegador con el mapa funcionando.
 
 **Vercel:** `npx vercel --prod` dentro de esta carpeta.
 
-**GitHub Pages:** subir a un repo público → Settings → Pages → Branch `main`, carpeta `/`.
+**GitHub Pages:** ya publicado en https://fabrizzioper.github.io/relaveras-volcan-prototipo/
+(Settings → Pages → Branch `main`, carpeta `/`).
 
 **Servidor propio (IIS, Apache, nginx):** copiar la carpeta al directorio público. Nada más.
 
@@ -52,6 +54,9 @@ a la cuenta de Google Cloud del titular.
 Los datos están escritos dentro del HTML (arreglos `piezometers`,
 `instrumentData` e `insarZones`) y son **ilustrativos**. Para producción:
 
-- Reemplazar las coordenadas por las de campo reales de cada instrumento.
+- Las coordenadas ubican cada instrumento sobre el dique con precisión de
+  fotointerpretación (±15 m aprox.). Reemplazarlas por el levantamiento GPS de campo.
 - Poblar las lecturas desde el conector de telemetría (RF-01) en vez de hardcodearlas.
 - Cargar las zonas InSAR reales con su fecha de pasada satelital.
+- La portada rotula el depósito a 4 220 msnm y 82/84 instrumentos: cifras de
+  ejemplo, confirmarlas con el equipo de geotecnia antes de presentarlas.
