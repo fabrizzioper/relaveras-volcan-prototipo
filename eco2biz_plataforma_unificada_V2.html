@@ -1317,17 +1317,25 @@
         }
       }
       const step = 2*HALF_X/SEG;
+      let fx=0, fz=0, fw=0;
+      const muestras = [];
       for(let j=0;j<=SEG;j++){
         for(let i=0;i<=SEG;i++){
           const x = -HALF_X + (2*HALF_X*i/SEG), z = -HALF_Z + (2*HALF_Z*j/SEG);
           const yL=grid[j][Math.max(0,i-1)], yR=grid[j][Math.min(SEG,i+1)];
           const yD=grid[Math.max(0,j-1)][i], yU=grid[Math.min(SEG,j+1)][i];
           const slope = (Math.abs(yR-yL)+Math.abs(yU-yD))/(2*step);
-          const c = riskColorArr(idwRisk(x,z,seeds));
+          const risk = idwRisk(x,z,seeds);
+          const c = riskColorArr(risk);
           const shade = Math.max(0.65, 1 - Math.min(0.3, slope*0.18));
           colors.push(c[0]*shade, c[1]*shade, c[2]*shade);
+          const wgt = Math.max(0, risk - 0.15);   // sólo pesa lo que se ve teñido
+          fx += x*wgt; fz += z*wgt; fw += wgt;
+          if(wgt > 0.05 && i % 4 === 0 && j % 4 === 0) muestras.push(x, z, wgt);
         }
       }
+      const foco = fw ? new THREE.Vector3(fx/fw, 0, fz/fw) : null;
+      muestrasRiesgo = muestras;
       const indices = [];
       for(let j=0;j<SEG;j++) for(let i=0;i<SEG;i++){
         const a=j*(SEG+1)+i, b=a+1, c=a+(SEG+1), d=c+1;
@@ -1338,7 +1346,7 @@
       geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
       geo.setAttribute('color', new THREE.Float32BufferAttribute(colors,3));
       geo.computeVertexNormals();
-      return { geo, grid, seeds };
+      return { geo, grid, seeds, foco };
     }
 
     function detectLandslideZones(grid, seeds){
@@ -1360,7 +1368,7 @@
     let terrainMesh=null, pointCloud=null, markerGroup, landslideGroup;
     let landslideZones = [], rafId = null, viewActive = false, ready = false, t = 0;
     let raycaster = null, pointer = null, selRing = null, seleccion = null, downXY = null;
-    let popupEl = null, selPos = null;
+    let popupEl = null, selPos = null, focoRiesgo = null, muestrasRiesgo = [];
 
     // Cada instrumento se dibuja con la silueta de lo que realmente hay en campo:
     // pozo de observación, casing inclinométrico anillado y placa de asentamiento.
@@ -1409,7 +1417,9 @@
       if(pointCloud){ scene.remove(pointCloud); pointCloud.geometry.dispose(); pointCloud.material.dispose(); }
       markerGroup.clear(); landslideGroup.clear();
 
-      const { geo, grid, seeds } = buildTerrain();
+      const { geo, grid, seeds, foco } = buildTerrain();
+      focoRiesgo = foco;
+      if(focoRiesgo) focoRiesgo.y = heightAt(focoRiesgo.x, focoRiesgo.z);
 
       const mat = new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.85, metalness:0.05, wireframe: viewMode==='wireframe' });
       terrainMesh = new THREE.Mesh(geo, mat);
@@ -1467,6 +1477,7 @@
       });
 
       renderIssues();
+      encuadrarVista();
     }
 
     // ---- Selección: clic en la escena o en la lista, con detalle y enfoque ----
@@ -1656,11 +1667,46 @@
       renderer.render(scene, camera);
     }
 
+    // El panel de hallazgos tapa la franja derecha, así que el sujeto queda
+    // descentrado. En vez de un ajuste a ojo, se proyectan los puntos de interés,
+    // se mide su centro en pantalla y se corrige el frustum esa misma distancia.
+    function encuadrarVista(){
+      if(!renderer || !camera || !datos.length) return;
+      const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
+      if(!w || !h) return;
+      camera.clearViewOffset();
+      camera.updateMatrixWorld();
+
+      // Centroide ponderado ya en píxeles: recoge la deformación de la perspectiva
+      // y, a diferencia del rectángulo envolvente, no lo arrastra un punto lejano.
+      let ax=0, ay=0, aw=0;
+      const v = new THREE.Vector3();
+      for(let k=0; k<muestrasRiesgo.length; k+=3){
+        const mx = muestrasRiesgo[k], mz = muestrasRiesgo[k+1], mw = muestrasRiesgo[k+2];
+        v.set(mx, heightAt(mx,mz), mz).project(camera);
+        if(v.z > 1) continue;
+        const px = (v.x*0.5+0.5)*w, py = (-v.y*0.5+0.5)*h;
+        if(px < -w || px > 2*w || py < -h || py > 2*h) continue;
+        ax += px*mw; ay += py*mw; aw += mw;
+      }
+      if(!aw) return;
+      const sx = ax/aw, sy = ay/aw;
+
+      const panel = stage.querySelector('.r3d-issues');
+      const tapado = (panel && getComputedStyle(panel).display !== 'none')
+        ? panel.getBoundingClientRect().width + 32 : 0;
+      const objetivoX = (w - tapado)/2, objetivoY = h/2;
+      const dx = objetivoX - sx, dy = objetivoY - sy;
+      camera.setViewOffset(w, h, -dx, -dy, w, h);
+    }
+
     function resize(){
       if(!renderer || !stage.clientWidth) return;
+      camera.clearViewOffset();
       camera.aspect = stage.clientWidth/stage.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(stage.clientWidth, stage.clientHeight);
+      encuadrarVista();
     }
 
     function build(){
