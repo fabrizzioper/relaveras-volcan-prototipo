@@ -433,82 +433,6 @@
   <div class="hero-grad"></div>
   <div class="hero-vignette"></div>
 
-  <svg class="hero-hud" viewBox="0 0 1600 1066" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <defs>
-      <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#4f9bd6" stop-opacity="0"/>
-        <stop offset="55%" stop-color="#7fc4f0" stop-opacity=".55"/>
-        <stop offset="100%" stop-color="#4f9bd6" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-
-    <polygon class="hud-insar" points="600,772 1030,810 1010,864 578,836"/>
-
-    <!-- Instrumentos sin ficha: dan la sensación de cobertura sin invadir la columna de texto -->
-    <g transform="translate(760,622)"><g class="hud-pin" style="--d:2.7s">
-      <circle class="hud-ring" r="9" stroke="#9089e0"/><circle class="hud-dot" r="7" fill="#9089e0"/>
-    </g></g>
-    <g transform="translate(1180,598)"><g class="hud-pin" style="--d:2.85s">
-      <circle class="hud-ring" r="9" stroke="#4f9bd6"/><circle class="hud-dot" r="7" fill="#4f9bd6"/>
-    </g></g>
-    <g transform="translate(1390,660)"><g class="hud-pin" style="--d:3.0s">
-      <circle class="hud-ring" r="9" stroke="#33ab8c"/><circle class="hud-dot" r="7" fill="#33ab8c"/>
-    </g></g>
-
-    <!-- Instrumentos del flanco este: punto + ficha con la lectura -->
-    <g transform="translate(900,600)"><g class="hud-pin" style="--d:3.2s">
-      <line class="hud-lead" x1="0" y1="0" x2="46" y2="-48" stroke="#33ab8c"/>
-      <g transform="translate(46,-48)">
-        <rect class="hud-plate" x="8" y="-21" rx="6" width="168" height="42"/>
-        <text class="hud-code" x="20" y="-4">PZ-15</text>
-        <text class="hud-val" x="20" y="14" data-live="24.1" data-unit=" m.c.a.">24.1 m.c.a.</text>
-      </g>
-      <circle class="hud-ring" r="9" stroke="#33ab8c"/><circle class="hud-dot" r="7.5" fill="#33ab8c"/>
-    </g></g>
-
-    <g transform="translate(1310,628)"><g class="hud-pin" style="--d:3.4s">
-      <line class="hud-lead" x1="0" y1="0" x2="-50" y2="46" stroke="#4f9bd6"/>
-      <g transform="translate(-50,46)">
-        <rect class="hud-plate" x="-190" y="-21" rx="6" width="182" height="42"/>
-        <text class="hud-code" x="-178" y="-4">INC-08</text>
-        <text class="hud-val" x="-178" y="14" data-live="3.6" data-unit=" mm acum.">3.6 mm acum.</text>
-      </g>
-      <circle class="hud-ring" r="9" stroke="#4f9bd6"/><circle class="hud-dot" r="7.5" fill="#4f9bd6"/>
-    </g></g>
-
-    <g transform="translate(1470,702)"><g class="hud-pin" style="--d:3.6s">
-      <line class="hud-lead" x1="0" y1="0" x2="-48" y2="34" stroke="#33ab8c"/>
-      <g transform="translate(-48,34)">
-        <rect class="hud-plate" x="-176" y="-21" rx="6" width="168" height="42"/>
-        <text class="hud-code" x="-164" y="-4">PZ-08</text>
-        <text class="hud-val" x="-164" y="14" data-live="21.6" data-unit=" m.c.a.">21.6 m.c.a.</text>
-      </g>
-      <circle class="hud-ring" r="9" stroke="#33ab8c"/><circle class="hud-dot" r="7.5" fill="#33ab8c"/>
-    </g></g>
-
-    <g transform="translate(1130,845)"><g class="hud-pin" style="--d:3.8s">
-      <line class="hud-lead" x1="0" y1="0" x2="56" y2="-44" stroke="#9089e0"/>
-      <g transform="translate(56,-44)">
-        <rect class="hud-plate" x="8" y="-21" rx="6" width="164" height="42"/>
-        <text class="hud-code" x="20" y="-4">CA-03</text>
-        <text class="hud-val" x="20" y="14" data-live="11.8" data-unit=" mm">11.8 mm</text>
-      </g>
-      <circle class="hud-ring" r="9" stroke="#9089e0"/><circle class="hud-dot" r="7.5" fill="#9089e0"/>
-    </g></g>
-
-    <g transform="translate(830,845)"><g class="hud-pin is-warn" style="--d:4.0s">
-      <line class="hud-lead" x1="0" y1="0" x2="52" y2="-96" stroke="#dfa93d"/>
-      <g transform="translate(52,-96)">
-        <rect class="hud-plate" x="8" y="-30" rx="6" width="176" height="60" stroke="#dfa93d"/>
-        <text class="hud-code" x="20" y="-12" fill="#dfa93d">PZ-16</text>
-        <text class="hud-val" x="20" y="6" data-live="33.1" data-unit=" m.c.a.">33.1 m.c.a.</text>
-        <text class="hud-val" x="20" y="23" fill="#dfa93d">Atención</text>
-      </g>
-      <circle class="hud-ring" r="9" stroke="#dfa93d"/><circle class="hud-dot" r="8.5" fill="#dfa93d"/>
-    </g></g>
-
-    <rect class="hud-scan" x="0" y="0" width="1600" height="96"/>
-  </svg>
 
   <div class="hero-body">
     <div class="hero-eyebrow"><span class="pulse"></span>ECO2BIZ · Monitoreo geotécnico de relaveras</div>
@@ -523,7 +447,7 @@
       <div class="hero-stat"><div class="n">82<small>/84</small></div><span class="l">Instrumentos activos</span></div>
       <div class="hero-stat"><div class="n">98.6<small>%</small></div><span class="l">Disponibilidad 24 h</span></div>
       <div class="hero-stat"><div class="n">1</div><span class="l">Zona sobre umbral</span></div>
-      <div class="hero-stat"><div class="n">4 220<small> msnm</small></div><span class="l">Cota de coronación</span></div>
+      <div class="hero-stat"><div class="n">3 790<small> msnm</small></div><span class="l">Cota de coronación</span></div>
     </div>
     <div class="hero-cta">
       <button class="hero-btn" id="hero-enter">Entrar a la plataforma <span class="arw" aria-hidden="true">&#8594;</span></button>
