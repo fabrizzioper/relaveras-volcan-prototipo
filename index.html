@@ -282,7 +282,7 @@
 .hero-img{
   position:absolute; inset:0; width:100%; height:100%;
   object-fit:cover; object-position:center center;
-  transform:scale(1.12); filter:saturate(1.02) contrast(1.05) brightness(1.05);
+  transform:scale(1.12); filter:saturate(1.05) contrast(1.03) brightness(1.13);
   animation:heroKen 26s ease-out forwards;
 }
 @keyframes heroKen{ from{transform:scale(1.12) translate3d(0,0,0);} to{transform:scale(1.0) translate3d(0,-1.2%,0);} }
@@ -290,12 +290,12 @@
 .hero-grad{
   position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(ellipse 47% 88% at 15% 58%, rgba(12,17,23,.92) 0%, rgba(12,17,23,.54) 44%, rgba(12,17,23,0) 77%),
-    linear-gradient(to bottom, rgba(12,17,23,.44) 0%, rgba(12,17,23,.04) 24%, rgba(12,17,23,0) 50%, rgba(12,17,23,.10) 78%, rgba(12,17,23,.42) 100%);
+    radial-gradient(ellipse 40% 76% at 14% 60%, rgba(12,17,23,.74) 0%, rgba(12,17,23,.34) 46%, rgba(12,17,23,0) 76%),
+    linear-gradient(to bottom, rgba(12,17,23,.22) 0%, rgba(12,17,23,0) 26%, rgba(12,17,23,0) 62%, rgba(12,17,23,.06) 82%, rgba(12,17,23,.24) 100%);
 }
 .hero-vignette{
   position:absolute; inset:0; pointer-events:none;
-  background:radial-gradient(ellipse 84% 78% at 60% 44%, transparent 54%, rgba(12,17,23,.30) 100%);
+  background:radial-gradient(ellipse 90% 84% at 60% 44%, transparent 62%, rgba(12,17,23,.16) 100%);
 }
 
 /* --- capa HUD sobre la foto --- */
@@ -348,18 +348,16 @@
 .hero-title{
   font-family:var(--font-display); font-weight:700;
   font-size:clamp(38px,6.4vw,78px); line-height:1.02; letter-spacing:-.025em;
-  margin:20px 0 0; color:#fff; text-shadow:0 2px 40px rgba(0,0,0,.85), 0 1px 3px rgba(0,0,0,.55);
+  margin:20px 0 0; color:#fff; text-shadow:0 2px 30px rgba(0,0,0,.95), 0 2px 8px rgba(0,0,0,.8), 0 1px 2px rgba(0,0,0,.7);
   opacity:0; animation:riseIn .9s cubic-bezier(.2,.7,.3,1) .68s forwards;
 }
 .hero-title em{
-  font-style:normal; display:block;
-  background:linear-gradient(96deg,#9fd8ff 0%,#5fb0e8 42%,#35c2a0 100%);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  filter:drop-shadow(0 2px 22px rgba(0,0,0,.95)) drop-shadow(0 1px 3px rgba(0,0,0,.75));
+  font-style:normal; display:block; color:#a9e2ff;
+  text-shadow:0 2px 26px rgba(0,0,0,.95), 0 2px 8px rgba(0,0,0,.85), 0 1px 2px rgba(0,0,0,.75);
 }
 .hero-lead{
   margin:18px 0 0; max-width:560px; font-size:15.5px; line-height:1.65;
-  color:#ccd5e2; text-shadow:0 1px 16px rgba(0,0,0,.92), 0 1px 2px rgba(0,0,0,.7);
+  color:#e4eaf3; text-shadow:0 1px 12px rgba(0,0,0,.98), 0 1px 4px rgba(0,0,0,.9), 0 1px 2px rgba(0,0,0,.8);
   opacity:0; animation:riseIn .9s cubic-bezier(.2,.7,.3,1) .84s forwards;
 }
 .hero-stats{
@@ -368,12 +366,12 @@
 }
 .hero-stat .n{
   font-family:var(--font-display); font-size:clamp(24px,3vw,33px); font-weight:600;
-  color:#fff; line-height:1; letter-spacing:-.02em; text-shadow:0 1px 14px rgba(0,0,0,.85);
+  color:#fff; line-height:1; letter-spacing:-.02em; text-shadow:0 1px 12px rgba(0,0,0,.95), 0 1px 4px rgba(0,0,0,.85);
 }
 .hero-stat .n small{ font-size:.5em; color:var(--text-secondary); font-weight:400; margin-left:3px; }
 .hero-stat .l{
   display:block; margin-top:7px; font-family:var(--font-mono); font-size:10.5px;
-  letter-spacing:.13em; text-transform:uppercase; color:#9aa5b8; text-shadow:0 1px 10px rgba(0,0,0,.85);
+  letter-spacing:.13em; text-transform:uppercase; color:#c2cbd9; text-shadow:0 1px 8px rgba(0,0,0,.95), 0 1px 3px rgba(0,0,0,.85);
 }
 .hero-cta{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:38px 0 0;
   opacity:0; animation:riseIn .9s cubic-bezier(.2,.7,.3,1) 1.16s forwards; }
@@ -388,14 +386,14 @@
 .hero-btn:hover{ transform:translateY(-2px); box-shadow:0 16px 42px rgba(79,155,214,.46); }
 .hero-btn .arw{ transition:transform .22s ease; }
 .hero-btn:hover .arw{ transform:translateX(4px); }
-.hero-coords{ font-family:var(--font-mono); font-size:11.5px; color:#9aa5b8; text-shadow:0 1px 10px rgba(0,0,0,.9); }
+.hero-coords{ font-family:var(--font-mono); font-size:11.5px; color:#c2cbd9; text-shadow:0 1px 8px rgba(0,0,0,.95), 0 1px 3px rgba(0,0,0,.85); }
 @keyframes riseIn{ from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:translateY(0);} }
 
 /* --- ticker de telemetría --- */
 .hero-ticker{
   position:absolute; left:0; right:0; bottom:0; z-index:4; height:44px;
   display:flex; align-items:center; overflow:hidden;
-  background:rgba(12,17,23,.58); border-top:1px solid rgba(41,51,69,.7);
+  background:rgba(12,17,23,.44); border-top:1px solid rgba(255,255,255,.14);
   backdrop-filter:blur(16px);
   opacity:0; animation:riseIn .8s ease-out 1.4s forwards;
 }
