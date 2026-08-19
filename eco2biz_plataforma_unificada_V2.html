@@ -267,7 +267,7 @@
     .sidebar{position:fixed; z-index:20; transform:translateX(-100%); transition:transform .2s;}
     .sidebar.open{transform:translateX(0);}
     .kpi-grid{grid-template-columns:repeat(3,1fr);}
-    .grid-2, .plan-wrap{grid-template-columns:1fr;}
+    .grid-2, .plan-wrap{grid-template-columns:minmax(0,1fr);}
   }
 
 /* ===================== PORTADA CINEMÁTICA — RELAVERA ORCOPAMPA ===================== */
@@ -432,6 +432,7 @@
 .content.r3d-immersive > .view.active{ height:100%; position:relative; }
 
 .r3d-stage{ position:absolute; inset:0; overflow:hidden; background:var(--bg); }
+.r3d-canvas{ position:absolute; inset:0; overflow:hidden; }
 .r3d-stage canvas{ display:block; }
 .r3d-loading{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
@@ -512,6 +513,116 @@
 .r3d-issue .meta{ font-size:10.5px; color:var(--text-secondary); }
 .r3d-empty{ font-size:11.5px; color:var(--text-secondary); font-style:italic; }
 
+
+/* ===================== ADAPTACIÓN A PANTALLAS PEQUEÑAS ===================== */
+/* Botón de menú: sólo aparece cuando el lateral se repliega */
+.menu-btn{
+  display:none; flex:none; width:38px; height:38px; align-items:center; justify-content:center;
+  background:var(--panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
+  border-radius:8px; font-size:17px; cursor:pointer;
+}
+.menu-btn:hover{ background:var(--panel-hover); }
+.topbar-title{ min-width:0; }
+.topbar-title h1{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.topbar-title .sub{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.nav-scrim{
+  position:fixed; inset:0; z-index:19; background:rgba(6,10,15,.6); backdrop-filter:blur(2px);
+}
+.nav-scrim[hidden]{ display:none; }
+
+/* Las tablas no encogen: se desplazan a lo ancho dentro de su panel */
+.table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.table-wrap table{ min-width:560px; }
+/* Sin esto, una pista de grid no baja del ancho de su contenido y el panel
+   crece por debajo de la tabla en vez de dejarla desplazarse. */
+.kpi-grid > *, .grid-2 > *, .plan-wrap > *, .r3d-wrap > *{ min-width:0; }
+.panel{ min-width:0; }
+
+@media (max-width:1100px){
+  .kpi-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+
+@media (max-width:1000px){
+  .menu-btn{ display:inline-flex; }
+  .sidebar{ box-shadow:0 0 40px rgba(0,0,0,.5); }
+  .topbar{ padding:12px 16px; gap:12px; }
+  .content{ padding:20px 16px 48px; }
+  .clock{ display:none; }
+}
+
+@media (max-width:820px){
+  .topbar{ flex-wrap:wrap; row-gap:10px; }
+  .topbar .spacer{ display:none; }
+  .topbar-title{ flex:1 1 auto; }
+  #site-select{ flex:1 1 100%; order:5; min-width:0; }
+  .btn-hero-open span, .btn-accent span{ margin:0; }
+  .kpi-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .grid-2, .plan-wrap{ grid-template-columns:minmax(0,1fr); }
+  #gmap{ height:340px !important; }
+  .seccion-controls-select{ min-width:0 !important; width:100%; }
+  h2.section-title{ font-size:15px; }
+}
+
+@media (max-width:560px){
+  .topbar{ padding:10px 12px; }
+  .content{ padding:16px 12px 40px; }
+  .kpi-grid{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .kpi-value{ font-size:22px; }
+  .btn span{ display:none; }
+  .helper{ font-size:12px; }
+}
+
+/* --- Relieve 3D: en pantallas chicas deja de ser inmersivo y se apila --- */
+@media (max-width:900px){
+  .content.r3d-immersive{ padding:20px 16px 48px; overflow-y:auto; }
+  .content.r3d-immersive > .view.active{ height:auto; }
+  /* Apilado: primero los controles, luego el terreno y al final los hallazgos.
+     En escritorio el orden del DOM da igual porque los paneles van superpuestos. */
+  .r3d-stage{ position:relative; inset:auto; height:auto; overflow:visible; background:none;
+    display:flex; flex-direction:column; }
+  .r3d-toolbar{ order:1; }
+  .r3d-canvas{ order:2; }
+  .r3d-issues{ order:3; }
+  .r3d-canvas{
+    position:relative; inset:auto; height:56vh; min-height:300px;
+    border:1px solid var(--border); border-radius:var(--radius); background:var(--bg);
+  }
+  .r3d-toolbar{
+    position:static; max-width:none; justify-content:flex-start; margin:0 0 10px;
+    overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px;
+  }
+  .r3d-toolbar select, .r3d-toolbar button{ flex:none; }
+  .r3d-issues{
+    display:block; position:static; width:auto; max-height:none; margin:12px 0 0;
+    background:var(--panel); backdrop-filter:none;
+  }
+  .r3d-legend{ display:none; }
+  .r3d-hint{ display:none; }
+  .r3d-popup{ width:210px; }
+}
+
+/* --- Portada --- */
+@media (max-width:820px){
+  /* En vertical el recorte deja casi todo cielo: se baja el encuadre al depósito */
+  .hero-img{ object-position:center 62%; }
+  .hero-body{
+    left:12px; right:12px; bottom:56px; max-width:none;
+    padding:20px 20px 22px;
+  }
+  .hero-title{ font-size:clamp(28px,8vw,40px); }
+  .hero-lead{ font-size:13.5px; line-height:1.55; }
+  .hero-stats{ gap:18px 26px; margin-top:20px; }
+  .hero-cta{ margin-top:24px; gap:12px; }
+  .hero-ticker{ height:38px; }
+  .tick{ font-size:11px; }
+}
+@media (max-width:560px){
+  .hero-lead{ display:none; }                 /* el titular y las cifras bastan a este ancho */
+  .hero-stats .hero-stat:nth-child(n+4){ display:none; }
+  .hero-coords{ flex:1 1 100%; }
+}
+
 </style>
 </head>
 <body>
@@ -548,6 +659,7 @@
 </div>
 
 
+<div class="nav-scrim" id="nav-scrim" hidden></div>
 <nav class="sidebar" aria-label="Navegación principal">
   <div class="brand">
     <div class="brand-mark">E2</div>
@@ -580,7 +692,10 @@
 
 <div class="main">
   <div class="topbar">
-    <div>
+    <button class="menu-btn" id="menu-btn" aria-label="Abrir men&uacute;" aria-expanded="false">
+      <span aria-hidden="true">&#9776;</span>
+    </button>
+    <div class="topbar-title">
       <h1 id="view-title">Resumen general</h1>
       <div class="sub" id="view-sub">Estado consolidado de instrumentación geotécnica</div>
     </div>
@@ -659,7 +774,7 @@
       <p class="helper">Comparación de lecturas de los instrumentos ubicados sobre una misma sección transversal, para evaluar en conjunto la superficie freática y el comportamiento del talud.</p>
 
       <div class="panel-head" style="margin-bottom:16px;">
-        <select style="min-width:220px;" aria-label="Seleccionar sección">
+        <select class="seccion-controls-select" style="min-width:220px;" aria-label="Seleccionar sección">
           <option>Sección A-A' — Talud sur</option>
           <option>Sección B-B' — Talud oeste</option>
           <option>Sección C-C' — Dique principal</option>
@@ -683,13 +798,15 @@
         </div>
         <div class="panel">
           <div class="panel-head"><span class="title">Lecturas actuales</span></div>
-          <table>
+          <div class="table-wrap">
+        <table>
             <tr><td>PZ-14</td><td class="mono" style="text-align:right;">28.4 m.c.a.</td></tr>
             <tr><td>PZ-15</td><td class="mono" style="text-align:right;">24.1 m.c.a.</td></tr>
             <tr><td>PZ-16</td><td class="mono" style="text-align:right;">26.7 m.c.a.</td></tr>
             <tr><td>INC-07 (18 m)</td><td class="mono" style="text-align:right;">4.2 mm</td></tr>
             <tr><td>CA-03</td><td class="mono" style="text-align:right;">11.8 mm</td></tr>
           </table>
+        </div>
           <button class="btn" style="width:100%; justify-content:center; margin-top:14px;">Exportar vista como imagen</button>
         </div>
       </div>
@@ -735,8 +852,6 @@
     <!-- ================= VISTA: RELIEVE 3D ================= -->
     <section class="view" id="view-relieve3d">
       <div class="r3d-stage" id="r3d-stage">
-        <div class="r3d-loading" id="r3d-loading">Cargando el relieve del dep&oacute;sito&hellip;</div>
-
         <div class="r3d-toolbar">
           <select id="r3d-indicador" aria-label="Capa de riesgo">
             <option value="combinado">Riesgo combinado</option>
@@ -760,12 +875,15 @@
           <button id="r3d-full" title="Ver a pantalla completa">&#9974; Pantalla completa</button>
         </div>
 
+
         <div class="r3d-issues">
           <h2>Problemas identificados</h2>
           <div class="cnt" id="r3d-count">&mdash;</div>
           <div id="r3d-list"></div>
           <div class="r3d-tip">Haz clic en un punto del terreno o en un hallazgo de la lista para ver su ficha.</div>
         </div>
+        <div class="r3d-canvas" id="r3d-canvas">
+        <div class="r3d-loading" id="r3d-loading">Cargando el relieve del dep&oacute;sito&hellip;</div>
 
         <div class="r3d-legend">
           <div class="row"><span class="swatch" style="background:#33ab8c;"></span>Riesgo bajo</div>
@@ -782,6 +900,7 @@
         </div>
 
         <div class="r3d-hint">Arrastra para rotar &middot; rueda para zoom &middot; clic derecho para desplazar</div>
+        </div>
       </div>
     </section>
 
@@ -789,6 +908,7 @@
     <section class="view" id="view-umbrales">
       <p class="helper">Configuración de niveles de atención, alerta, alarma y emergencia por instrumento. Los cambios quedan registrados con usuario y fecha para trazabilidad.</p>
       <div class="panel">
+        <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -806,6 +926,7 @@
             <tr><td>AC-02</td><td>Acelerógrafo (PGA g)</td><td><input class="th-input" value="0.05"></td><td><input class="th-input" value="0.10"></td><td><input class="th-input" value="0.20"></td><td><input class="th-input" value="0.35"></td><td><span class="badge ok">Normal</span></td></tr>
           </tbody>
         </table>
+        </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
           <button class="btn">Descartar cambios</button>
           <button class="btn btn-accent">Guardar umbrales</button>
@@ -817,6 +938,7 @@
     <section class="view" id="view-inventario">
       <p class="helper">Inventario georreferenciado de instrumentos con su ficha técnica y estado operativo, base para el conector de ingesta y para la trazabilidad de calibración.</p>
       <div class="panel">
+        <div class="table-wrap">
         <table>
           <thead>
             <tr><th>Código</th><th>Tipo</th><th>Profundidad</th><th>Instalación</th><th>Última calibración</th><th>Estado</th></tr>
@@ -830,6 +952,7 @@
             <tr><td class="mono">INSAR-S1</td><td>InSAR (procesamiento satelital)</td><td class="mono">Cobertura talud sur</td><td class="mono">2022-06-01</td><td class="mono">N/A</td><td><span class="badge crit">Zona en atención</span></td></tr>
           </tbody>
         </table>
+        </div>
       </div>
     </section>
 
@@ -905,6 +1028,25 @@
       if(window.initRelieve3D) window.initRelieve3D(key === 'relieve3d');
     });
   });
+
+  // ---- Menú lateral en pantallas donde se repliega ----
+  (function(){
+    const btn = document.getElementById('menu-btn');
+    const scrim = document.getElementById('nav-scrim');
+    const nav = document.querySelector('.sidebar');
+    if(!btn || !nav) return;
+    const abrir = (v)=>{
+      nav.classList.toggle('open', v);
+      scrim.hidden = !v;
+      btn.setAttribute('aria-expanded', String(v));
+    };
+    btn.addEventListener('click', ()=> abrir(!nav.classList.contains('open')));
+    scrim.addEventListener('click', ()=> abrir(false));
+    // elegir una vista cierra el menú, o taparía el contenido recién abierto
+    navItems.forEach(b=> b.addEventListener('click', ()=> abrir(false)));
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape') abrir(false); });
+    window.addEventListener('resize', ()=>{ if(window.innerWidth > 1000) abrir(false); });
+  })();
 
   // ---- Reloj ----
   function tick(){
@@ -1364,7 +1506,7 @@
     }
 
     // ---- Escena ----
-    let scene, camera, renderer, controls, stage;
+    let scene, camera, renderer, controls, stage, shell;
     let terrainMesh=null, pointCloud=null, markerGroup, landslideGroup;
     let landslideZones = [], rafId = null, viewActive = false, ready = false, t = 0;
     let raycaster = null, pointer = null, selRing = null, seleccion = null, downXY = null;
@@ -1692,8 +1834,11 @@
       if(!aw) return;
       const sx = ax/aw, sy = ay/aw;
 
-      const panel = stage.querySelector('.r3d-issues');
-      const tapado = (panel && getComputedStyle(panel).display !== 'none')
+      // Sólo se descuenta el panel cuando va superpuesto: al apilarse en pantallas
+      // pequeñas queda debajo del terreno y ya no le quita espacio.
+      const panel = shell.querySelector('.r3d-issues');
+      const cs = panel ? getComputedStyle(panel) : null;
+      const tapado = (cs && cs.display !== 'none' && cs.position === 'absolute')
         ? panel.getBoundingClientRect().width + 32 : 0;
       const objetivoX = (w - tapado)/2, objetivoY = h/2;
       const dx = objetivoX - sx, dy = objetivoY - sy;
@@ -1779,7 +1924,7 @@
 
       // Pantalla completa sobre el bloque entero, para conservar los controles
       // y el panel de hallazgos también en ese modo.
-      const fsBox = document.getElementById('r3d-stage');
+      const fsBox = shell;
       const fsBtn = document.getElementById('r3d-full');
       const inFs  = ()=> document.fullscreenElement === fsBox || document.webkitFullscreenElement === fsBox;
       fsBtn.addEventListener('click', ()=>{
@@ -1825,7 +1970,8 @@
     return function initRelieve3D(active){
       viewActive = !!active;
       if(!active || ready) { if(ready) resize(); return; }
-      stage = document.getElementById('r3d-stage');
+      stage = document.getElementById('r3d-canvas');
+      shell = document.getElementById('r3d-stage');
       if(loading) return;
       loading = (typeof THREE !== 'undefined' ? Promise.resolve()
           : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))

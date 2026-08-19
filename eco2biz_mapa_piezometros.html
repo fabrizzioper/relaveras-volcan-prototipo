@@ -144,10 +144,30 @@
   .badge.atencion{color:var(--amber); border-color:#5a4720; background:rgba(223,169,61,0.1);}
   .badge.alarma{color:var(--red); border-color:#5a2c28; background:rgba(226,99,92,0.1);}
 
-  @media (max-width:820px){
-    .sidebar{position:absolute; z-index:5; height:100%; transform:translateX(-100%); transition:transform .2s;}
+  .menu-btn{
+    display:none; flex:none; width:36px; height:36px; align-items:center; justify-content:center;
+    background:var(--panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
+    border-radius:8px; font-size:16px; cursor:pointer;
+  }
+  .menu-btn:hover{background:var(--panel-hover);}
+  .nav-scrim{position:fixed; inset:0; z-index:4; background:rgba(6,10,15,.6);}
+  .nav-scrim[hidden]{display:none;}
+
+  @media (max-width:900px){
+    .menu-btn{display:inline-flex;}
+    .sidebar{position:absolute; z-index:5; height:100%; transform:translateX(-100%); transition:transform .2s;
+      box-shadow:0 0 40px rgba(0,0,0,.5); max-width:86vw;}
     .sidebar.open{transform:translateX(0);}
     .detail-panel{width:220px;}
+    .topbar{flex-wrap:wrap; row-gap:9px; padding:11px 14px; gap:10px;}
+    .topbar .spacer{display:none;}
+    .topbar h1{font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .topbar .sub{display:none;}
+    #site-select{flex:1 1 100%; min-width:0; order:5;}
+  }
+  @media (max-width:560px){
+    .detail-panel{width:auto; left:10px; right:10px;}
+    .legend-bar{font-size:10.5px;}
   }
 </style>
 </head>
@@ -157,7 +177,9 @@
   <span>&#9888; Para activar el mapa, reemplaza <code>AIzaSyAkKC2qMimEQ05wpOg3b0-lMr9cK9hpmYo</code> en el HTML por tu API key de Google Maps con la Maps JavaScript API habilitada.</span>
 </div>
 
+<div class="nav-scrim" id="nav-scrim" hidden></div>
 <div class="topbar">
+  <button class="menu-btn" id="menu-btn" aria-label="Ver lista de piez&oacute;metros" aria-expanded="false"><span aria-hidden="true">&#9776;</span></button>
   <div class="brand-mark">E2</div>
   <div>
     <h1>Mapa de piezómetros</h1>
@@ -235,6 +257,19 @@
 
   let map, markers = [], infoWindow, selectedCode = null;
   let currentFilter = "todos";
+
+  (function(){
+    const btn = document.getElementById('menu-btn');
+    const scrim = document.getElementById('nav-scrim');
+    const nav = document.querySelector('.sidebar');
+    if(!btn || !nav) return;
+    const abrir = v=>{ nav.classList.toggle('open', v); scrim.hidden = !v; btn.setAttribute('aria-expanded', String(v)); };
+    btn.addEventListener('click', ()=> abrir(!nav.classList.contains('open')));
+    scrim.addEventListener('click', ()=> abrir(false));
+    nav.addEventListener('click', e=>{ if(e.target.closest('.item')) abrir(false); });
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape') abrir(false); });
+    window.addEventListener('resize', ()=>{ if(window.innerWidth > 900) abrir(false); });
+  })();
 
   function initMap(){
     // En cargas frías el callback puede dispararse antes de que exista el objeto google: reintentar
