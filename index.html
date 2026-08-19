@@ -608,6 +608,20 @@
 }
 
 /* --- Portada --- */
+/* Tablet: el bloque de escritorio se comía la foto, que es media presentación */
+@media (min-width:821px) and (max-width:1200px){
+  .hero-body{ max-width:min(520px, 58vw); padding:22px 26px 26px; bottom:clamp(56px,7vh,76px); }
+  .hero-title{ font-size:clamp(30px,4.4vw,44px); margin-top:14px; }
+  .hero-lead{ font-size:13.5px; line-height:1.55; margin-top:14px; }
+  .hero-stats{ gap:16px 28px; margin-top:22px; }
+  .hero-cta{ margin-top:26px; }
+}
+/* Pantalla baja: aunque quepa a lo ancho, el bloque no debe ocupar todo el alto */
+@media (min-width:821px) and (max-height:820px){
+  .hero-lead{ display:none; }
+  .hero-stats .hero-stat:nth-child(n+4){ display:none; }
+}
+
 @media (max-width:820px){
   /* En vertical el recorte deja casi todo cielo: se baja el encuadre al depósito */
   .hero-img{ object-position:center 62%; }
