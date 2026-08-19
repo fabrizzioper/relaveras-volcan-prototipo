@@ -474,7 +474,7 @@
   position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:4; white-space:nowrap;
   font-size:10.5px; color:var(--text-muted); background:rgba(20,27,36,.72); padding:5px 12px; border-radius:20px;
 }
-@media (max-width:1100px){ .r3d-issues{ display:none; } .r3d-hint{ display:none; } }
+@media (max-width:1100px){ .r3d-hint{ display:none; } }
 @media (max-width:820px){ .r3d-legend{ display:none; } }
 
 .r3d-tip{
@@ -522,7 +522,7 @@
   border-radius:8px; font-size:17px; cursor:pointer;
 }
 .menu-btn:hover{ background:var(--panel-hover); }
-.topbar-title{ min-width:0; }
+.topbar-title{ min-width:0; flex:1 1 auto; }
 .topbar-title h1{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .topbar-title .sub{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
@@ -543,12 +543,17 @@
   .kpi-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 
+/* El reloj es lo primero que sobra cuando el ancho aprieta */
+@media (max-width:1300px){
+  .clock{ display:none; }
+  #site-select{ max-width:230px; }
+}
+
 @media (max-width:1000px){
   .menu-btn{ display:inline-flex; }
   .sidebar{ box-shadow:0 0 40px rgba(0,0,0,.5); }
   .topbar{ padding:12px 16px; gap:12px; }
   .content{ padding:20px 16px 48px; }
-  .clock{ display:none; }
 }
 
 @media (max-width:820px){
@@ -574,7 +579,7 @@
 }
 
 /* --- Relieve 3D: en pantallas chicas deja de ser inmersivo y se apila --- */
-@media (max-width:900px){
+@media (max-width:1100px){
   .content.r3d-immersive{ padding:20px 16px 48px; overflow-y:auto; }
   .content.r3d-immersive > .view.active{ height:auto; }
   /* Apilado: primero los controles, luego el terreno y al final los hallazgos.
